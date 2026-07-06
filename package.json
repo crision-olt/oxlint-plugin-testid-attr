@@ -1,0 +1,23 @@
+{
+  "name": "oxlint-plugin-testid-attr",
+  "version": "0.1.0",
+  "description": "Oxlint JS plugin that enforces the exact data-testid attribute spelling.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "oxlint",
+    "oxlint-plugin",
+    "testing",
+    "data-testid"
+  ],
+  "peerDependencies": {
+    "oxlint": "^1.0.0"
+  },
+  "license": "MIT"
+}
