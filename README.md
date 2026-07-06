@@ -1,6 +1,6 @@
 # oxlint-plugin-testid-attr
 
-Oxlint JS plugin that enforces only the exact `data-testid` attribute spelling.
+Oxlint JS plugin that enforces only the exact `data-testid` attribute spelling across JSX and other markup patterns in Oxlint-supported files.
 
 The plugin reports misspellings such as:
 

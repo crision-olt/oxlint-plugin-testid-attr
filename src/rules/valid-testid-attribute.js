@@ -1,6 +1,8 @@
 const VALID_TEST_ID_ATTRIBUTE = "data-testid";
 const NORMALIZED_TEST_ID_ATTRIBUTE = "datatestid";
 const SEPARATOR_CHARACTERS = new Set(["-", "_", ":"]);
+const ATTRIBUTE_CANDIDATE_PATTERN = /\b([A-Za-z_][\w:-]*test[\w:-]*id)\b(?=\s*=)/gi;
+const MARKUP_TAG_PATTERN = /<[A-Za-z][^<>]*>/gs;
 
 function isNormalizedTestId(attributeName) {
   let normalizedIndex = 0;
@@ -62,15 +64,74 @@ export function createReplaceWithValidTestIdFix(attributeNode) {
   return (fixer) => fixer.replaceText(attributeNameNode, VALID_TEST_ID_ATTRIBUTE);
 }
 
+function getRangeKey(range) {
+  return Array.isArray(range) && range.length === 2 ? `${range[0]}:${range[1]}` : null;
+}
+
+function reportWithOptionalFix(context, nodeOrLoc, attributeName, range, reportedRanges) {
+  const rangeKey = getRangeKey(range);
+  if (rangeKey && reportedRanges.has(rangeKey)) {
+    return;
+  }
+
+  const diagnostic = {
+    node: nodeOrLoc,
+    message: createMessage(attributeName),
+  };
+
+  if (Array.isArray(range) && range.length === 2) {
+    diagnostic.fix = (fixer) => fixer.replaceTextRange(range, VALID_TEST_ID_ATTRIBUTE);
+  }
+
+  if (rangeKey) {
+    reportedRanges.add(rangeKey);
+  }
+
+  context.report(diagnostic);
+}
+
+export function findInvalidTestIdAttributesInMarkup(sourceText) {
+  if (typeof sourceText !== "string" || sourceText.length === 0) {
+    return [];
+  }
+
+  const invalidAttributes = [];
+
+  for (const tagMatch of sourceText.matchAll(MARKUP_TAG_PATTERN)) {
+    const tagText = tagMatch[0];
+    const tagStartIndex = tagMatch.index ?? 0;
+
+    for (const candidateMatch of tagText.matchAll(ATTRIBUTE_CANDIDATE_PATTERN)) {
+      const attributeName = candidateMatch[1];
+      if (!isInvalidTestIdAttribute(attributeName)) {
+        continue;
+      }
+
+      const relativeStart = candidateMatch.index ?? 0;
+      const start = tagStartIndex + relativeStart;
+      const end = start + attributeName.length;
+
+      invalidAttributes.push({
+        name: attributeName,
+        range: [start, end],
+      });
+    }
+  }
+
+  return invalidAttributes;
+}
+
 export const validTestIdAttributeRule = {
   meta: {
     fixable: "code",
     docs: {
       description:
-        "Enforce the exact data-testid attribute spelling in HTML/JSX markup.",
+        "Enforce the exact data-testid attribute spelling across Oxlint-supported markup styles.",
     },
   },
   create(context) {
+    const reportedRanges = new Set();
+
     return {
       JSXAttribute(node) {
         const attributeName = getJsxAttributeName(node);
@@ -78,17 +139,31 @@ export const validTestIdAttributeRule = {
           return;
         }
 
-        const diagnostic = {
-          node,
-          message: createMessage(attributeName),
-        };
-
-        const fix = createReplaceWithValidTestIdFix(node);
-        if (fix) {
-          diagnostic.fix = fix;
+        const attributeNameNode = node?.name;
+        const range = attributeNameNode?.range ?? node?.range;
+        const rangeKey = getRangeKey(range);
+        if (rangeKey) {
+          reportedRanges.add(rangeKey);
         }
 
-        context.report(diagnostic);
+        context.report({
+          node,
+          message: createMessage(attributeName),
+          fix: createReplaceWithValidTestIdFix(node),
+        });
+      },
+
+      Program(node) {
+        const sourceText = context.sourceCode?.text ?? context.getSourceCode().text;
+        for (const invalidAttribute of findInvalidTestIdAttributesInMarkup(sourceText)) {
+          reportWithOptionalFix(
+            context,
+            node,
+            invalidAttribute.name,
+            invalidAttribute.range,
+            reportedRanges,
+          );
+        }
       },
     };
   },

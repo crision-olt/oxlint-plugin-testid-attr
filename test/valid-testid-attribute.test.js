@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   createReplaceWithValidTestIdFix,
+  findInvalidTestIdAttributesInMarkup,
   isInvalidTestIdAttribute,
 } from "../src/rules/valid-testid-attribute.js";
 
@@ -49,4 +50,30 @@ test("creates autofix that rewrites attribute name to data-testid", () => {
     },
   ]);
   assert.deepEqual(result, { range: [5, 16], text: "data-testid" });
+});
+
+test("finds invalid testid attributes in markup across syntaxes", () => {
+  const source = `
+    <div data-testId="a"></div>
+    <button data-test-id="b"></button>
+    const tpl = \`<section dataTestId="c"></section>\`;
+    const vue = '<article data-TestId="d"></article>';
+  `;
+
+  assert.deepEqual(
+    findInvalidTestIdAttributesInMarkup(source).map(({ name }) => name),
+    ["data-testId", "data-test-id", "dataTestId", "data-TestId"],
+  );
+});
+
+test("does not treat plain JS assignments as markup attributes", () => {
+  const source = `
+    const dataTestId = "abc";
+    let data_test_id = "def";
+    function update(dataTestIdValue) {
+      return dataTestIdValue;
+    }
+  `;
+
+  assert.deepEqual(findInvalidTestIdAttributesInMarkup(source), []);
 });
