@@ -1,5 +1,5 @@
 {
-  "name": "oxlint-plugin-testid-attr",
+  "name": "@crision-olt/oxlint-plugin-testid-attr",
   "version": "0.1.0",
   "description": "Oxlint JS plugin that enforces the exact data-testid attribute spelling.",
   "type": "module",
