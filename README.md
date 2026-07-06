@@ -26,7 +26,7 @@ Configure Oxlint with `jsPlugins` and enable the rule:
   "jsPlugins": [
     {
       "name": "testid-attr",
-      "path": "@crision-olt/oxlint-plugin-testid-attr"
+      "specifier": "@crision-olt/oxlint-plugin-testid-attr"
     }
   ],
   "rules": {

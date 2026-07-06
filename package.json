@@ -1,6 +1,6 @@
 {
   "name": "@crision-olt/oxlint-plugin-testid-attr",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Oxlint JS plugin that enforces the exact data-testid attribute spelling.",
   "type": "module",
   "main": "src/index.js",
@@ -19,5 +19,8 @@
   "peerDependencies": {
     "oxlint": "^1.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@crision-olt/oxlint-plugin-testid-attr": "1.0.0"
+  }
 }
