@@ -14,7 +14,7 @@ It also supports **autofix** and rewrites these to `data-testid` when you run Ox
 ## Install
 
 ```bash
-npm install oxlint-plugin-testid-attr
+npm install @crision-olt/oxlint-plugin-testid-attr
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ Configure Oxlint with `jsPlugins` and enable the rule:
   "jsPlugins": [
     {
       "name": "testid-attr",
-      "path": "oxlint-plugin-testid-attr"
+      "path": "@crision-olt/oxlint-plugin-testid-attr"
     }
   ],
   "rules": {
